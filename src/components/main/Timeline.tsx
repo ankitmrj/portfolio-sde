@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { FC, useState } from 'react'
-
 import { Plus, Minus, Briefcase } from 'lucide-react'
 import { useLanguage } from '@/components/language-provider'
 import SectionWrapper from '@/components/ui/section-wrapper'
