@@ -1,0 +1,349 @@
+'use client'
+
+import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react'
+import { FC, FormEvent, useState } from 'react'
+import toast from 'react-hot-toast'
+import { useSound } from '@/components/sound-provider'
+import { useLanguage } from '@/components/language-provider'
+import SectionWrapper from '@/components/ui/section-wrapper'
+
+interface FormData {
+  name: string
+  email: string
+  subject: string
+  message: string
+}
+
+export const ContactUs: FC = () => {
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  })
+
+  const [status, setStatus] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { playKeystroke } = useSound()
+  const { language, t } = useLanguage()
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    if (e.key === ' ') {
+      playKeystroke('spacebar')
+    } else if (e.key === 'Backspace') {
+      playKeystroke('backspace')
+    } else if (e.key === 'Enter') {
+      playKeystroke('enter')
+    } else if (e.key.length === 1) {
+      playKeystroke('standard')
+    }
+  }
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setStatus('')
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        setStatus('MESSAGE_DELIVERED')
+        toast.success(t.contact.success)
+
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: '',
+        })
+      } else {
+        setStatus('ERROR_FAILED_TO_SEND')
+        toast.error(t.contact.error)
+      }
+    } catch {
+      setStatus('ERROR_CONNECTION_REFUSED')
+      toast.error(t.contact.error)
+    } finally {
+      setIsSubmitting(false)
+      setTimeout(() => setStatus(''), 5000)
+    }
+  }
+
+  const inputClasses =
+    'w-full px-3.5 py-2.5 bg-transparent border border-border/50 rounded text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/15 transition-all duration-200'
+
+  return (
+    <SectionWrapper id="contact" title={t.contact.title} code="0x07">
+      <div className="px-6 pb-12 pt-14">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-10 items-start">
+
+          {/* Left Side */}
+          <div className="flex flex-col justify-between h-full gap-8">
+
+            {/* Header */}
+            <div>
+              <h3 className="text-2xl font-semibold tracking-tight text-foreground mb-3 whitespace-pre-line">
+                {t.contact.heading}
+              </h3>
+
+              <p className="text-[13px] text-muted-foreground/70 leading-relaxed">
+                {{
+                  en: 'Open to software engineering opportunities.',
+                  hi: 'सॉफ्टवेयर इंजीनियरिंग के अवसरों के लिए उपलब्ध।',
+                  ja: 'ソフトウェアエンジニアリングの機会を探しています。',
+                }[language]}
+              </p>
+            </div>
+
+            {/* Contact Channels */}
+            <div className="space-y-4">
+
+              {/* Email */}
+              <a
+                href="mailto:ankitsrivastav.resume@gmail.com"
+                className="group flex items-start gap-3 hover:translate-x-0.5 transition-transform duration-200"
+              >
+                <div className="shrink-0 mt-0.5 text-foreground">
+                  <Mail className="h-4 w-4" />
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-foreground/90 group-hover:text-brand-blue transition-colors">
+                    ankitsrivastav.resume@gmail.com
+                  </span>
+
+                  <span className="block text-[11px] text-muted-foreground/70 mt-0.5">
+                    {{
+                      en: 'Preferred for professional inquiries',
+                      hi: 'पेशेवर पूछताछ के लिए पसंदीदा',
+                      ja: '仕事に関するお問い合わせはこちら',
+                    }[language]}
+                  </span>
+                </div>
+              </a>
+
+              {/* Phone */}
+              <a
+                href="tel:+916388335320"
+                className="group flex items-start gap-3 hover:translate-x-0.5 transition-transform duration-200"
+              >
+                <div className="shrink-0 mt-0.5 text-foreground">
+                  <Phone className="h-4 w-4" />
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-foreground/90 group-hover:text-brand-blue transition-colors">
+                    +91 63883 35320
+                  </span>
+
+                  <span className="block text-[11px] text-muted-foreground/70 mt-0.5">
+                    {{
+                      en: 'Available Mon–Sat, 10am–7pm IST',
+                      hi: 'उपलब्ध: सोम-शनि, सुबह 10 से शाम 7 बजे IST',
+                      ja: '対応時間: 月〜土、10:00〜19:00 IST',
+                    }[language]}
+                  </span>
+                </div>
+              </a>
+
+              {/* Location */}
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 mt-0.5 text-foreground">
+                  <MapPin className="h-4 w-4" />
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-foreground/90">
+                    Gorakhpur, Uttar Pradesh, India
+                  </span>
+
+                  <span className="block text-[11px] text-muted-foreground/70 mt-0.5">
+                    {{
+                      en: 'Open to software engineering opportunities',
+                      hi: 'सॉफ्टवेयर इंजीनियरिंग के अवसरों के लिए उपलब्ध',
+                      ja: 'ソフトウェアエンジニアリングの機会を受け付けています',
+                    }[language]}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Availability */}
+            <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/80">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
+
+              <span>
+                {{
+                  en: 'Currently looking for Software Development opportunities',
+                  hi: 'वर्तमान में सॉफ्टवेयर डेवलपमेंट के अवसरों की तलाश में',
+                  ja: '現在、ソフトウェア開発の機会を探しています',
+                }[language]}
+              </span>
+            </div>
+          </div>
+
+          {/* Right Side: Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="name"
+                  className="text-muted-foreground text-[9px] font-mono uppercase tracking-widest block"
+                >
+                  {t.contact.name}
+                </label>
+
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ankit Srivastav"
+                  required
+                  className={inputClasses}
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="email"
+                  className="text-muted-foreground text-[9px] font-mono uppercase tracking-widest block"
+                >
+                  {t.contact.email}
+                </label>
+
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="name@company.com"
+                  required
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+
+            {/* Subject */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="subject"
+                className="text-muted-foreground text-[9px] font-mono uppercase tracking-widest block"
+              >
+                {t.contact.subject}
+              </label>
+
+              <input
+                id="subject"
+                type="text"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                placeholder={{
+                  en: 'Job opportunity, collaboration, technical inquiry...',
+                  hi: 'नौकरी का अवसर, सहयोग, तकनीकी पूछताछ...',
+                  ja: '採用、コラボレーション、技術的なお問い合わせ...',
+                }[language]}
+                required
+                className={inputClasses}
+              />
+            </div>
+
+            {/* Message */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="message"
+                className="text-muted-foreground text-[9px] font-mono uppercase tracking-widest block"
+              >
+                {t.contact.message}
+              </label>
+
+              <textarea
+                id="message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                placeholder={{
+                  en: 'Tell me about the opportunity or project...',
+                  hi: 'अवसर या प्रोजेक्ट के बारे में बताएं...',
+                  ja: '機会やプロジェクトについてお聞かせください...',
+                }[language]}
+                required
+                rows={6}
+                className={`${inputClasses} resize-none`}
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              onClick={() => playKeystroke('enter')}
+              className="w-full py-3 bg-foreground hover:bg-foreground/90 text-background rounded text-xs font-semibold uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-black/10"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>{t.contact.sending}</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5" />
+                  <span>{t.contact.send}</span>
+                </>
+              )}
+            </button>
+
+            {/* Status */}
+            {status && (
+              <div
+                className={`p-3 rounded text-center text-xs font-medium ${status.includes('DELIVERED')
+                    ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                    : 'bg-destructive/10 border border-destructive/20 text-destructive'
+                  }`}
+              >
+                {status.includes('DELIVERED')
+                  ? `✓ ${t.contact.success}`
+                  : t.contact.error}
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+    </SectionWrapper>
+  )
+}
+
+export default ContactUs
