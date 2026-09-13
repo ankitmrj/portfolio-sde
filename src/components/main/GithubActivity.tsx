@@ -7,9 +7,25 @@ import { useTheme } from 'next-themes'
 import { useLanguage } from '@/components/language-provider'
 import SectionWrapper from '@/components/ui/section-wrapper'
 
+const LIGHT_SWATCHES: string[] = [
+  '#ebedf0',
+  '#9be9a8',
+  '#40c463',
+  '#30a14e',
+  '#216e39',
+]
+
+const DARK_SWATCHES: string[] = [
+  '#161b22',
+  '#0e4429',
+  '#006d32',
+  '#26a641',
+  '#39d353',
+]
+
 const RAMP: ThemeInput = {
-  light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
-  dark: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
+  light: LIGHT_SWATCHES,
+  dark: DARK_SWATCHES,
 }
 
 export const GithubActivity: React.FC = () => {
@@ -23,12 +39,13 @@ export const GithubActivity: React.FC = () => {
     setMounted(true)
   }, [])
 
-  // Always use light during SSR/initial hydration.
+  // Use light theme during SSR and initial hydration.
   // After mounting, use the actual selected theme.
   const scheme = mounted && theme === 'dark' ? 'dark' : 'light'
 
-  const swatches =
-    scheme === 'dark' ? RAMP.dark : RAMP.light
+  // Explicitly typed arrays prevent the "possibly undefined" error.
+  const swatches: string[] =
+    scheme === 'dark' ? DARK_SWATCHES : LIGHT_SWATCHES
 
   const captureTotal = (contributions: Activity[]) => {
     const currentTotal = contributions.reduce(
@@ -37,7 +54,9 @@ export const GithubActivity: React.FC = () => {
     )
 
     if (total !== currentTotal) {
-      setTimeout(() => setTotal(currentTotal), 0)
+      setTimeout(() => {
+        setTotal(currentTotal)
+      }, 0)
     }
 
     return contributions
